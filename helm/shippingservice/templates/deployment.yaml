@@ -1,0 +1,83 @@
+apiVersion: {{ .Values.deployment.version }}
+kind: Deployment
+metadata:
+  name: {{ .Values.deployment.name }}
+  labels:
+    app: {{ .Values.deployment.label }}
+spec:
+  replicas: {{ .Values.containers.replicas }}
+  selector:
+    matchLabels:
+      app: 
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.containers.name }}
+    spec:
+      imagePullSecrets:
+      - name: {{ .Values.deployment.secret }}
+      containers:
+      {% for container in .Values.containers %}
+      - name: {{ container.name }}
+        image: {{ container.image }}
+        {% if container.env.has-env %}
+        env:
+        {% for var in container.env.vars %}
+          - name: {{ var.name }}
+            value: {{ var.value }}
+        {% endfor %}
+        ports:
+        - containerPort: {{ container.port }}
+        resources:
+          requests:
+            memory: {{ container.resources.requests.memory }}
+            cpu: {{ container.resources.requests.cpu }}
+          limits:
+            memory: {{ container.resources.limits.memory }}
+            cpu: {{ container.resources.limits.cpu }}
+        {% if container.probes.liveness.has-probe %}
+        livenessProbe:
+          {% if "http" in container.probes.liveness.type %}
+          httpGet:
+            path: {{ container.probes.liveness.path }}
+            port: {{ container.port }}
+            {% if container.probes.liveness.has-header %}
+            httpHeaders:
+            {% for header in container.probes.liveness.headers %}
+            - name: {{ header.name }}
+              value: {{ header.value }}
+            {% endfor %}
+            {% endif %}
+          {% elif "shell" in container.probes.liveness.type %}
+          exec:
+            command:
+            {% for item in container.probes.liveness.command %}
+            - {{ item }}
+            {% endfor %}
+          initialDelaySeconds: {{ container.probes.liveness.delay }}
+          periodSeconds: {{ container.probes.liveness.period }}
+          {% endif %}
+        {% if container.probes.readiness.has-probe %}
+        readinessProbe:
+          {% if "http" in container.probes.readiness.type %}
+          httpGet:
+            path: {{ container.probes.readiness.path }}
+            port: {{ container.port }}
+            {% if container.probes.readiness.has-header %}
+            httpHeaders:
+            {% for header in container.probes.readiness.headers %}
+            - name: {{ header.name }}
+              value: {{ header.value }}
+            {% endfor %}
+            {% endif %}
+          {% elif "shell" in container.probes.readiness.type %}
+          exec:
+            command:
+            {% for item in container.probes.readiness.command %}
+            - {{ item }}
+            {% endfor %}
+          initialDelaySeconds: {{ container.probes.readiness.delay }}
+          periodSeconds: {{ container.probes.readiness.period }}
+          {% endif %}
+        {% endif %}
+      {% endfor %}

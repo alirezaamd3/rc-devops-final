@@ -1,0 +1,87 @@
+apiVersion: {{ .Values.deployment.version }}
+kind: Deployment
+metadata:
+  name: {{ .Values.deployment.name }}
+  labels:
+    app: {{ .Values.deployment.label }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.deployment.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.deployment.name }}
+    spec:
+      imagePullSecrets:
+      - name: {{ .Values.deployment.secret }}
+      containers:
+      {{- range .Values.containers }}
+      - name: {{ .name }}
+        image: {{ .image }}
+        {{- if .env.hasenv }}
+        env:
+        {{- range .env.vars }}
+          - name: {{ .name | quote }}
+            value: {{ .value | quote }}
+        {{- end }}
+        {{- end }}
+        ports:
+        - containerPort: {{ .port }}
+        resources:
+          requests:
+            memory: {{ .resources.requests.memory }}
+            cpu: {{ .resources.requests.cpu }}
+          limits:
+            memory: {{ .resources.limits.memory }}
+            cpu: {{ .resources.limits.cpu }}
+        {{- if .probes.liveness.hasprobe }}
+        livenessProbe:
+          {{- if eq .probes.liveness.type "http" }}
+          httpGet:
+            path: {{ .probes.liveness.path }}
+            port: {{ .port }}
+            {{- if .probes.liveness.hasheader }}
+            httpHeaders:
+            {{- range .probes.liveness.headers }}
+            - name: {{ .name | quote }}
+              value: {{ .value | quote }}
+            {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- if eq .probes.liveness.type "shell" }}
+          exec:
+            command:
+            {{- range .probes.liveness.command }}
+            - {{ . }}
+            {{- end }}
+          initialDelaySeconds: {{ .probes.liveness.delay }}
+          periodSeconds: {{ .probes.liveness.period }}
+          {{- end }}
+        {{- end }}
+        {{- if .probes.readiness.hasprobe }}
+        readinessProbe:
+          {{- if eq .probes.readiness.type "http" }}
+          httpGet:
+            path: {{ .probes.readiness.path }}
+            port: {{ .port }}
+            {{- if .probes.readiness.hasheader }}
+            httpHeaders:
+            {{- range .probes.readiness.headers }}
+            - name: {{ .name | quote }}
+              value: {{ .value | quote }}
+            {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- if eq .probes.readiness.type "shell" }}
+          exec:
+            command:
+            {{- range .probes.readiness.command }}
+            - {{ . }}
+            {{- end }}
+          initialDelaySeconds: {{ .probes.readiness.delay }}
+          periodSeconds: {{ .probes.readiness.period }}
+          {{- end }}
+        {{- end }}
+      {{- end }}

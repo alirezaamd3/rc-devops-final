@@ -1,0 +1,55 @@
+
+deployment:
+  version: apps/v1
+  secret: regcred
+  name: helloworld
+  label: helloworld
+  replicas: 2
+
+containers:
+- name: helloworld
+  port: 8080
+  image: registry.hamdocker.ir/alirezaamd3/helloworld:latest
+  env:
+    hasenv: true
+    vars:
+      - name: RAND_SVC_HOST
+        value: randomstring
+      - name: RAND_SVC_PORT
+        value: "8200"
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "250m"
+    limits:
+      memory: "128Mi"
+      cpu: "500m"
+  probes:
+    liveness:
+      hasprobe: true
+      type: http
+      path: /_healthz
+      hasheader: true
+      headers:
+      - name: shop_session-id
+        value: x-liveness-probe
+      delay: 10
+      period: 5
+    readiness:
+      hasprobe: true
+      type: shell
+      command:
+      - /bin/grpc_health_probe
+      - -addr=:80
+      - -rpc-timeout=5s
+      delay: 30
+      period: 5
+
+service:
+  version: v1
+  type: LoadBalancer
+  name: helloworld-service
+  ports: 
+  - port: 80
+    targetPort: 8080
+
