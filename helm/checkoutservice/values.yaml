@@ -32,7 +32,7 @@ containers:
       - name: CURRENCY_SERVICE_ADDR
         value: "currencyservice.ns-alireza.svc.cluster.local:8080"
       - name: CART_SERVICE_ADDR
-        value: "cartservice.ns-alireza.svc.cluster.local:8080"
+        value: "cartservice.ns-alireza.svc.cluster.local:7070"
   resources:
     requests:
       memory: "64Mi"

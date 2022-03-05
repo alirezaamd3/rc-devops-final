@@ -9,7 +9,7 @@ deployment:
 containers:
 - name: recommendationservice
   port: 8080
-  image: registry.gitlab.com/pdustdar/online-boutique/cartservice:0.0.1
+  image: registry.gitlab.com/pdustdar/online-boutique/recommendationservice:0.0.1
   env:
     hasenv: true
     vars:

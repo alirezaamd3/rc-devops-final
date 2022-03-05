@@ -9,7 +9,7 @@ deployment:
 containers:
 - name: paymentservice
   port: 8080
-  image: registry.gitlab.com/pdustdar/online-boutique/cartservice:0.0.1
+  image: registry.gitlab.com/pdustdar/online-boutique/paymentservice:0.0.1
   env:
     hasenv: true
     vars:
