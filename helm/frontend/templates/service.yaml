@@ -8,6 +8,7 @@ spec:
   ports:
   {{- range .Values.service.ports }}
     - protocol: TCP
+      name: http
       port: {{ .port }}
       targetPort: {{ .targetPort }}
   {{- end }}

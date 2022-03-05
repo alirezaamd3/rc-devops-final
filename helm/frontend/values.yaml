@@ -1,22 +1,40 @@
 
 deployment:
   version: apps/v1
-  secret: regcred
-  name: helloworld
-  label: helloworld
+  secret: gitlab
+  name: frontend
+  label: frontend
   replicas: 2
 
 containers:
-- name: helloworld
+- name: frontend
   port: 8080
-  image: registry.hamdocker.ir/alirezaamd3/helloworld:latest
+  image: registry.gitlab.com/pdustdar/online-boutique/frontend:0.0.1
   env:
     hasenv: true
     vars:
-      - name: RAND_SVC_HOST
-        value: randomstring
-      - name: RAND_SVC_PORT
-        value: "8200"
+      - name: DISABLE_STATS
+        value: "1"
+      - name: DISABLE_TRACING
+        value: "1"
+      - name: DISABLE_PROFILER
+        value: "1"
+      - name: PORT
+        value: "8080"
+      - name: PRODUCT_CATALOG_SERVICE_ADDR
+        value: "productcatalogservice.ns-alireza.svc.cluster.local:8080"
+      - name: SHIPPING_SERVICE_ADDR
+        value: "shippingservice.ns-alireza.svc.cluster.local:8080"
+      - name: RECOMMENDATION_SERVICE_ADDR
+        value: "recommendationservice.ns-alireza.svc.cluster.local:8080"
+      - name: CHECKOUT_SERVICE_ADDR
+        value: "checkoutservice.ns-alireza.svc.cluster.local:8080"
+      - name: CURRENCY_SERVICE_ADDR
+        value: "currencyservice.ns-alireza.svc.cluster.local:8080"
+      - name: CART_SERVICE_ADDR
+        value: "cartservice.ns-alireza.svc.cluster.local:8080"
+      - name: AD_SERVICE_ADDR
+        value: "adservice.ns-alireza.svc.cluster.local:8080"
   resources:
     requests:
       memory: "64Mi"
@@ -26,7 +44,7 @@ containers:
       cpu: "500m"
   probes:
     liveness:
-      hasprobe: true
+      hasprobe: false
       type: http
       path: /_healthz
       hasheader: true
@@ -34,22 +52,23 @@ containers:
       - name: shop_session-id
         value: x-liveness-probe
       delay: 10
-      period: 5
+      period: 10
     readiness:
-      hasprobe: true
-      type: shell
-      command:
-      - /bin/grpc_health_probe
-      - -addr=:80
-      - -rpc-timeout=5s
-      delay: 30
-      period: 5
+      hasprobe: false
+      type: http
+      path: /_healthz
+      hasheader: true
+      headers:
+      - name: shop_session-id
+        value: x-readiness-probe
+      delay: 10
+      period: 10
 
 service:
   version: v1
   type: LoadBalancer
-  name: helloworld-service
+  name: frontend
   ports: 
-  - port: 80
+  - port: 8080
     targetPort: 8080
 

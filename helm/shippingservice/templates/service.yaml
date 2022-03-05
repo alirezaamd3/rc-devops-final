@@ -6,9 +6,10 @@ spec:
   selector:
     app: {{ .Values.deployment.label }}
   ports:
-  {% for port in .Values.service.ports %}
+  {{- range .Values.service.ports }}
     - protocol: TCP
-      port: {{ port.port }}
-      targetPort: {{ port.targetPort }}
-  {% endfor %}
+      name: http
+      port: {{ .port }}
+      targetPort: {{ .targetPort }}
+  {{- end }}
   type: {{ .Values.service.type }}

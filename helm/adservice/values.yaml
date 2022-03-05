@@ -1,7 +1,7 @@
 
 deployment:
   version: apps/v1
-  secret: rc5
+  secret: gitlab
   name: adservice
   label: adservice
   replicas: 2
@@ -9,18 +9,18 @@ deployment:
 containers:
 - name: adservice
   port: 8080
-  image: registry.hamdocker.ir/rahnema-g5/adservice:0.0.1
+  image: registry.gitlab.com/pdustdar/online-boutique/adservice:0.0.1
   env:
     hasenv: true
     vars:
       - name: DISABLE_STATS
-        value: 1
+        value: "1"
       - name: DISABLE_TRACING
-        value: 1
+        value: "1"
       - name: DISABLE_PROFILER
-        value: 1
+        value: "1"
       - name: PORT
-        value: 8080
+        value: "8080"
   resources:
     requests:
       memory: "64Mi"
@@ -53,6 +53,6 @@ service:
   type: ClusterIP
   name: adservice
   ports: 
-  - port: 80
+  - port: 8080
     targetPort: 8080
 

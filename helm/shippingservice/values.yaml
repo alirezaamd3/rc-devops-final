@@ -1,55 +1,58 @@
 
 deployment:
   version: apps/v1
-  secret: regcred
-  name: helloworld
-  label: helloworld
+  secret: gitlab
+  name: shippingservice
+  label: shippingservice
+  replicas: 2
 
 containers:
-- name: helloworld
+- name: shippingservice
   port: 8080
-  replicas: 2
-  image: registry.hamdocker.ir/alirezaamd3/helloworld:latest
+  image: registry.gitlab.com/pdustdar/online-boutique/shippingservice:0.0.1
   env:
-    has-env: true
+    hasenv: true
     vars:
-      - name: RAND_SVC_HOST
-        value: randomstring
-      - name: RAND_SVC_PORT
-        value: "8200"
+      - name: DISABLE_STATS
+        value: 1
+      - name: DISABLE_TRACING
+        value: 1
+      - name: DISABLE_PROFILER
+        value: 1
+      - name: PORT
+        value: 8080
   resources:
     requests:
       memory: "64Mi"
-      cpu: "250m"
+      cpu: "50m"
     limits:
       memory: "128Mi"
-      cpu: "500m"
+      cpu: "100m"
   probes:
     liveness:
-      has-probe: true
-      type: http
-      path: /_healthz
-      has-header: true
-      headers:
-      - name: shop_session-id
-        value: x-liveness-probe
-      delay: 10
-      period: 5
-    readiness:
-      has-probe: true
+      hasprobe: false
       type: shell
       command:
       - /bin/grpc_health_probe
-      - -addr=:80
-      - -rpc-timeout=5s
-      delay: 30
-      period: 5
+      - -addr=localhost:8080
+      - -rpc-timeout=10s
+      delay: 10
+      period: 10
+    readiness:
+      hasprobe: false
+      type: shell
+      command:
+      - /bin/grpc_health_probe
+      - -addr=localhost:8080
+      - -rpc-timeout=10s
+      delay: 10
+      period: 10
 
 service:
   version: v1
   type: ClusterIP
-  name: helloworld-service
+  name: shippingservice
   ports: 
-  - port: 80
+  - port: 8080
     targetPort: 8080
 
