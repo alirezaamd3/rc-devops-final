@@ -56,9 +56,10 @@ spec:
             {{- range .probes.liveness.command }}
             - {{ . }}
             {{- end }}
+          {{- end }}
           initialDelaySeconds: {{ .probes.liveness.delay }}
           periodSeconds: {{ .probes.liveness.period }}
-          {{- end }}
+          timeoutSeconds: {{ .probes.liveness.timeout }}
         {{- end }}
         {{- if .probes.readiness.hasprobe }}
         readinessProbe:
@@ -80,8 +81,9 @@ spec:
             {{- range .probes.readiness.command }}
             - {{ . }}
             {{- end }}
+          {{- end }}
           initialDelaySeconds: {{ .probes.readiness.delay }}
           periodSeconds: {{ .probes.readiness.period }}
-          {{- end }}
+          timeoutSeconds: {{ .probes.readiness.timeout }}
         {{- end }}
       {{- end }}
