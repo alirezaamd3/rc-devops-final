@@ -1,55 +1,40 @@
 
 deployment:
   version: apps/v1
-  secret: regcred
-  name: helloworld
-  label: helloworld
-  replicas: 2
+  secret: gitlab
+  name: loadgenerator
+  label: loadgenerator
+  replicas: 1
 
 containers:
-- name: helloworld
+- name: loadgenerator
   port: 8080
-  image: registry.hamdocker.ir/alirezaamd3/helloworld:latest
+  image: registry.gitlab.com/pdustdar/online-boutique/loadgenerator:0.0.1
   env:
     hasenv: true
     vars:
-      - name: RAND_SVC_HOST
-        value: randomstring
-      - name: RAND_SVC_PORT
-        value: "8200"
+      - name: USERS
+        value: "10"
+      - name: FRONTEND_ADDR
+        value: "frontend.ns-alireza.svc.cluster.local:8080"
   resources:
     requests:
-      memory: "64Mi"
-      cpu: "250m"
+      memory: "180Mi"
+      cpu: "200m"
     limits:
-      memory: "128Mi"
-      cpu: "500m"
+      memory: "300Mi"
+      cpu: "300m"
   probes:
     liveness:
-      hasprobe: true
-      type: http
-      path: /_healthz
-      hasheader: true
-      headers:
-      - name: shop_session-id
-        value: x-liveness-probe
-      delay: 10
-      period: 5
+      hasprobe: false
     readiness:
-      hasprobe: true
-      type: shell
-      command:
-      - /bin/grpc_health_probe
-      - -addr=:80
-      - -rpc-timeout=5s
-      delay: 30
-      period: 5
+      hasprobe: false
 
 service:
   version: v1
-  type: LoadBalancer
-  name: helloworld-service
+  type: ClusterIP
+  name: loadgenerator
   ports: 
-  - port: 80
+  - port: 8080
     targetPort: 8080
 
